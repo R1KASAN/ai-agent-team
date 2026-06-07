@@ -6,7 +6,7 @@ context_budget: small
 required_input: any input from Rika-Chan — idea, topic, question, note, link, "ทำอะไรดี", "เคยเซฟ...", or a task
 optional_input: supporting artifact paths, constraints, risk notes, approval notes; never full chat history
 forbidden_actions: bypassing Minori, skipping artifact gates, starting downstream workflows automatically, auto-escalating to dynamic without Rika approval, using large/dynamic context without approval, overwriting existing files without approval, inventing agents
-produces: handoffs/workflow_plan_YYYYMMDD_NNN.md (+ approval_request.md if a gate or dynamic budget is triggered)
+produces: handoffs/workflow_plan_YYYYMMDD_NNN.md + logs/runtime_status.md row (+ approval_request.md if a gate or dynamic budget is triggered)
 approval_gate: none for classification; required if selected route is strategic/financial/legal/privacy/security OR execution_mode = dynamic
 stop_condition: workflow_plan.md produced; no downstream workflow starts automatically; dynamic route → halt for Rika dynamic-budget approval
 ref: workflows/idea_gate.md · context.md · llm_wiki/dynamic_workflow_policy.md
@@ -18,7 +18,7 @@ The single front door. Type `/idea-gate [anything]` and Minori does three things
 
 1. **Classify the job** — what kind of work is this?
 2. **Classify the weight** — how big is it (tiny → strategic)?
-3. **Route** — pick the cheapest execution_mode that fits, write `workflow_plan.md`, and stop at any gate.
+3. **Route** — pick the cheapest execution_mode that fits, write `workflow_plan.md`, record Level 1 Runtime status, and stop at any gate.
 
 Optional shortcuts (`/scout`, `/recall`, `/next`, `/idea`, `/memory`, `/research`, `/build`, plus
 Codex utilities) still work for users who already know the intended route. `/idea-gate` is the
@@ -72,7 +72,7 @@ Rules:
 ## Step 3 — Orchestrator Contract + route
 
 Before any delegation, fill all 8 fields in `workflow_plan.md` (schema in `workflows/idea_gate.md`),
-now including `weight` and `execution_mode`. Then:
+now including `weight`, `execution_mode`, and `runtime_tracking`. Then:
 
 - `single_agent` / `sequential_handoff` → hand to the first agent (cheap path, no approval needed
   unless a hard gate applies).
@@ -86,6 +86,15 @@ Each gate must be marked `Pre-Decide` with Rika-Chan's decision before Aki, or `
 checkpoint such as `Coda proposes options + Rika-Chan approves before implementation/spend/deploy`.
 If none are expected, record `expected_gates: none_detected` with a reason. If gates are detected but
 not clarified, Aki must not start.
+
+For any route beyond pure classification, record Level 1 Runtime status:
+
+- Set `runtime_tracking.runtime_mode: level_1_status_only`.
+- Write/update a compact row in `logs/runtime_status.md`.
+- Use `current_status`, `current_agent`, `latest_artifact`, and `next_step` instead of pasting full
+  artifact content.
+- Treat `next_step` as task_queue/status marker only; do not schedule tasks or spawn agents.
+- Never use runtime status to enable parallel/fanout.
 
 ---
 
@@ -104,3 +113,5 @@ not clarified, Aki must not start.
   Mira writes `knowledge/research/[slug].md`.
 - Routed work that proceeds beyond pure classification must create an agent run log in
   `logs/agent_runs/` using `templates/agent_run_log.md`.
+- Routed work beyond pure classification must also record workflow-level status in
+  `logs/runtime_status.md` using `templates/runtime_status.md`.

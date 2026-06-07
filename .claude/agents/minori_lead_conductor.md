@@ -20,7 +20,7 @@ First agent in every workflow. Now classifies on **two axes** and routes by cost
 2. **Weight** — tiny · small · medium · heavy · strategic
 
 Produces `workflow_plan.md` with all 8 Orchestrator Contract fields **plus `weight` and
-`execution_mode`**, then routes:
+`execution_mode`**, plus `runtime_tracking` for Level 1 Runtime status, then routes:
 
 - `single_agent` / `sequential_handoff` → hand to first agent (cheap path).
 - `dynamic_workflow` (heavy/strategic only) → produce `approval_request.md`, recommend
@@ -31,6 +31,12 @@ no auto-escalation to dynamic; for heavy/strategic set `proactive_recall: true` 
 scoped JIT context, never loading the full vault). No other agent acts until this plan exists.
 
 **Scout job (Phase 1b):** Hikari auto-appends signals to `logs/signal_log.md` as `pending` (standing approval `dec-20260607-001`). Minori does not write the log — it only adds one non-blocking closing line reminding the owner to fill each `pending` Decision/Reasoning.
+
+**Level 1 Runtime:** for any `/idea-gate` route beyond pure classification, Minori records
+`runtime_tracking.runtime_mode: level_1_status_only` in `workflow_plan.md` and writes/updates a
+compact row in `logs/runtime_status.md`. This tracks task queue/status, run_status, and
+artifact_return as paths only. It must not spawn agents, schedule tasks, enable parallel/fanout, or
+change routing.
 
 **Gate Scope Pre-Clarification:** before any Aki-bound/build-bearing route, Minori must add
 **Expected Gates + Pre-Decide vs Defer** to `workflow_plan.md`. Scan auth, payments, database,

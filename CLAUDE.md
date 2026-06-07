@@ -83,6 +83,18 @@ delegation. > Flow: `workflows/idea_gate.md`
 No agent may start until Minori defines all of: current step, next step, agent owner, input artifact,
 output artifact, context budget, stop condition, approval gate (if needed).
 
+## Level 1 Runtime Status Layer
+
+Level 1 Runtime is active and status-only. Minori records `runtime_tracking` in `workflow_plan.md`
+and writes compact workflow status rows to `logs/runtime_status.md` using
+`templates/runtime_status.md`.
+
+Required runtime fields: `runtime_mode: level_1_status_only`, `run_id`, `status_log`,
+`agent_run_log_dir`, `current_status`, `current_agent`, `latest_artifact`, and `next_step`.
+
+This layer records task queue/status, run_status, and artifact_return as artifact paths only. It must
+not spawn agents, schedule tasks, enable parallel/fanout, or change sequential routing.
+
 ## Gate Scope Pre-Clarification
 
 Before any workflow enters Aki or any build-bearing route, Minori must record **Expected Gates +
@@ -162,6 +174,8 @@ standalone agent), and Waste Reduction.
 - Agents sign output with initials in brackets: `[Mi] [Yu] [NV] [So] [Bu] [Po] [Ri] [Ak] [Co] [QA] [Mr] [Hi] [Ts] [Ic] [Te]`
 - Use `→` for flow, `|` for field separation, `[ ]` for state labels. Skip pleasantries in agent-to-agent handoffs.
 - Compressed output codes: `wp`=workflow_plan · `ep`=verified_evidence_pack · `sl`=strategic_lens · `ba`=business_brief · `pb`=product_brief · `tp`=task_packet · `tr`=test_report · `ds`=daily_signal · `rp`=resurface_pack · `gu`=graph_update · `ur`=qa_ux_report
+- Runtime mode code: `level_1_status_only` = status/log artifact only; no scheduler or parallel
+  execution.
 > Full conventions: `system_prompt_v1.md` → Shared Conventions
 
 ---

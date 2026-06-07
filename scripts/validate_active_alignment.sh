@@ -83,6 +83,16 @@ check_present "Gate Scope Pre-Clarification documented" "Gate Scope Pre-Clarific
 
 check_present "Pre-Decide vs Defer documented" "Pre-Decide vs Defer" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/idea_gate.md templates/workflow_plan.md agents/claude_team/minori_lead_conductor.md .claude/agents/minori_lead_conductor.md .claude/commands/idea-gate.md .claude/commands/prd-to-codex-tasks.md skills/claude/workflow-router/SKILL.md
 
+check_present "Level 1 Runtime documented" "Level 1 Runtime" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md AI_AGENT_TEAM_ARCHITECTURE.md workflows/workflow_index.md workflows/idea_gate.md templates/workflow_plan.md templates/runtime_status.md agents/claude_team/minori_lead_conductor.md .claude/agents/minori_lead_conductor.md .claude/commands/idea-gate.md skills/claude/workflow-router/SKILL.md
+
+check_present "runtime_tracking schema documented" "runtime_tracking" CLAUDE.md AGENTS.md workflows/idea_gate.md templates/workflow_plan.md agents/claude_team/minori_lead_conductor.md .claude/agents/minori_lead_conductor.md .claude/commands/idea-gate.md skills/claude/workflow-router/SKILL.md handoffs/workflow_plan_20260608_002.md
+
+check_present "level_1_status_only mode documented" "level_1_status_only" CLAUDE.md AGENTS.md workflows/idea_gate.md templates/workflow_plan.md templates/runtime_status.md logs/runtime_status.md agents/claude_team/minori_lead_conductor.md .claude/agents/minori_lead_conductor.md .claude/commands/idea-gate.md skills/claude/workflow-router/SKILL.md handoffs/workflow_plan_20260608_002.md
+
+check_present "runtime_status artifact documented" "runtime_status\\.md" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md AI_AGENT_TEAM_ARCHITECTURE.md workflows/workflow_index.md workflows/idea_gate.md templates/runtime_status.md logs/runtime_status.md .claude/commands/idea-gate.md skills/claude/workflow-router/SKILL.md
+
+check_absent "Level 1 Runtime does not enable parallel default" "Level 1 Runtime.*enables parallel|level_1_status_only.*enables parallel|Level 1 Runtime.*enables fanout|level_1_status_only.*enables fanout|Level 1 Runtime.*parallel by default|level_1_status_only.*parallel by default"
+
 check_present "Aki-bound workflows block missing gate preclarification" "Gate Scope Pre-Clarification.*before Aki|Gate Scope Pre-Clarification.*stop before Aki|stop before Aki.*Gate Scope Pre-Clarification" workflows/product_idea_to_prd.md workflows/prd_to_codex_tasks.md .claude/commands/product-idea-to-prd.md .claude/commands/prd-to-codex-tasks.md
 
 check_present "Aki refuses unresolved gate preclarification" "Aki must not start|stop.*before technical translation|Do not use before.*Gate Scope Pre-Clarification" agents/codex_team/aki_system_architect.md .claude/agents/aki_system_architect.md

@@ -20,6 +20,7 @@ approval.
 ## What This System Does
 
 - Routes input through Input Gatekeeper (Minori) to the correct workflow
+- Tracks workflow status with Level 1 Runtime (`runtime_tracking` + `logs/runtime_status.md`)
 - Challenges, validates, and plans product ideas before any build starts
 - Enforces sequential handoff: each agent produces an artifact before the next starts
 - Requires Gate Scope Pre-Clarification before any Aki/build path
@@ -54,7 +55,8 @@ Raw Inbox → Graphify (entity/relation graph) → Obsidian Vault (human-readabl
 2. Run: `/idea-gate`
 3. Describe your input — Minori will classify it and produce a Workflow Plan
 4. Review `workflow_plan.md` before any agent proceeds
-5. For Aki/build paths, confirm `expected_gates` and `gate_decisions` exist before technical planning
+5. Confirm `runtime_tracking.runtime_mode: level_1_status_only` is present for logged workflows
+6. For Aki/build paths, confirm `expected_gates` and `gate_decisions` exist before technical planning
 
 ---
 
@@ -70,6 +72,8 @@ Core workflows: `idea_gate` → `product_idea_debate` → `evidence_crosscheck` 
 ## Key Rules
 
 - Sequential handoff is the default. Parallel requires Rika-Chan approval.
+- Level 1 Runtime is status-only: `logs/runtime_status.md` records run status and artifact paths,
+  not a scheduler, fanout controller, or extra agent.
 - No agent may proceed without its required input artifact.
 - No Aki/build handoff may proceed without Expected Gates + Pre-Decide vs Defer in `workflow_plan.md`.
 - No product code in setup runs.

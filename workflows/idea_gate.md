@@ -24,7 +24,8 @@ Rika-Chan input (anything)
 → Minori: classify JOB (recall/next/scout/memory/research/idea-debate/build/governance)
 → Minori: classify WEIGHT (tiny/small/medium/heavy/strategic)
 → Minori: pick execution_mode (single_agent | sequential_handoff | dynamic_workflow)
-→ Minori: produce workflow_plan.md (8-field Orchestrator Contract + weight + execution_mode)
+→ Minori: produce workflow_plan.md (8-field Orchestrator Contract + weight + execution_mode + runtime_tracking)
+→ if route proceeds beyond pure classification → write/update logs/runtime_status.md (Level 1 Runtime)
 → if execution_mode = dynamic_workflow OR route is high-risk → approval_request.md + STOP for Rika
 → else → route to first agent
 ```
@@ -67,6 +68,15 @@ workflow_plan:
   missing_inputs: []
   assumptions: []
   risk_flags: []
+  runtime_tracking:
+    runtime_mode: level_1_status_only
+    run_id: ""
+    status_log: logs/runtime_status.md
+    agent_run_log_dir: logs/agent_runs/
+    current_status: planned
+    current_agent: Minori Lead Conductor
+    latest_artifact: ""
+    next_step: ""
   agent_sequence:
     - step: 1
       agent: ""
@@ -93,6 +103,17 @@ workflow_plan:
 ```
 
 ---
+
+## Level 1 Runtime Status
+
+For any `/idea-gate` route beyond pure classification, Minori must record `runtime_tracking` in
+`workflow_plan.md` and add or update a compact row in `logs/runtime_status.md`.
+
+- `runtime_mode` is always `level_1_status_only`.
+- Status values: `planned`, `running`, `awaiting_approval`, `blocked`, `complete`, `aborted`.
+- `task_queue` is represented by `next_step`; this is a marker, not a scheduler.
+- `artifact_return` is represented by `latest_artifact`; record paths only, not artifact bodies.
+- Level 1 Runtime must not spawn agents, launch dynamic workflows, or enable parallel/fanout.
 
 ## Gate Scope Pre-Clarification
 

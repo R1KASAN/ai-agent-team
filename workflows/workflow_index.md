@@ -13,6 +13,17 @@ Minori assigns the workflow.
 This is a hierarchical multi-agent orchestrator: Minori coordinates specialized agents, sequential
 handoff is the default, and dynamic/parallel workflow requires Rika-Chan approval.
 
+## Level 1 Runtime Status Layer
+
+Level 1 Runtime is active as a status-only layer. It records task queue/status, run_status, and
+artifact_return as compact artifact paths in `logs/runtime_status.md`.
+
+- Runtime mode: `level_1_status_only`.
+- Template: `templates/runtime_status.md`.
+- It does not spawn agents, schedule tasks, enable parallel/fanout, or change routing.
+- For `/idea-gate` beyond pure classification, Minori records `runtime_tracking` in
+  `workflow_plan.md` and updates the runtime status row.
+
 ## Canonical Front Door + Optional Shortcuts
 
 | Slash Command | Route | Purpose | Key Output |
@@ -41,6 +52,9 @@ Files required before activation: `.claude/commands/{ask,maintain,check,outputs}
 `workflows/knowledge_{ask,maintain,check,outputs}.md`.
 
 ## Agent Run Logging
+
+Workflow-level runtime status is tracked separately in `logs/runtime_status.md`. Agent-level audit
+logs remain under `logs/agent_runs/`.
 
 Write run logs to `logs/agent_runs/` with `templates/agent_run_log.md`.
 
@@ -131,5 +145,7 @@ Input received by Minori
 - Sequential-by-default: parallel fanout forbidden unless six conditions + Rika-Chan approval.
 - Gate Scope Pre-Clarification: any Aki/build route requires `expected_gates` + `gate_decisions`
   with each expected gate marked Pre-Decide or Defer before Aki starts.
+- Level 1 Runtime: `runtime_tracking` + `logs/runtime_status.md` are status-only; no scheduler,
+  parallel fanout, or extra agent spawn is allowed for runtime logging.
 - Agent Registry Lock: Nova-V replaces Nova+Vera; Gina/Kai/Lexi/Graphy/Seco are backend only.
 - Dynamic Workflow policy: `llm_wiki/token_optimization_rules.md`.

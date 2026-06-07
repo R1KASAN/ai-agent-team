@@ -7,7 +7,7 @@ system_type: hierarchical_multi_agent_orchestrator
 
 # AI Agent Team Architecture
 
-This system is a **hierarchical multi-agent orchestrator**. Minori is the central router and gatekeeper. Specialized agents execute scoped work through sequential handoff by default. Parallel or dynamic workflow is allowed only after Rika-Chan approval.
+This system is a **hierarchical multi-agent orchestrator**. Minori is the central router and gatekeeper. Specialized agents execute scoped work through sequential handoff by default. Parallel or dynamic workflow is allowed only after Rika-Chan approval. Level 1 Runtime is status-only: it records run status and artifact paths, but does not schedule agents or enable fanout.
 
 ## 1. High-Level Orchestrator
 
@@ -97,7 +97,24 @@ flowchart TD
     OK -->|no| BLOCK["Aki must not start"]
 ```
 
-## 4. Memory And Evidence Layer
+## 4. Level 1 Runtime Status Layer
+
+```mermaid
+flowchart TD
+    IG["/idea-gate"] --> MI["Minori"]
+    MI --> WP["workflow_plan.md<br/>runtime_tracking"]
+    WP --> RS["logs/runtime_status.md<br/>Level 1 Runtime index"]
+
+    RS --> Q["task_queue/status<br/>next_step marker"]
+    RS --> ST["run_status<br/>planned/running/blocked/etc."]
+    RS --> AR["artifact_return<br/>latest artifact path"]
+
+    RS -.-> NO1["No scheduler"]
+    RS -.-> NO2["No extra agent spawn"]
+    RS -.-> NO3["No parallel/fanout"]
+```
+
+## 5. Memory And Evidence Layer
 
 ```mermaid
 flowchart TD
@@ -124,7 +141,7 @@ flowchart TD
     MIRA2 --> KRES["knowledge/research"]
 ```
 
-## 5. Product-To-Build Pipeline
+## 6. Product-To-Build Pipeline
 
 ```mermaid
 flowchart TD
@@ -163,7 +180,7 @@ flowchart TD
     QA --> SHIP["Ship check + Rika-Chan approval"]
 ```
 
-## 6. Agent Team Map
+## 7. Agent Team Map
 
 ```mermaid
 mindmap
@@ -219,3 +236,5 @@ mindmap
 - `workflows/workflow_index.md` — active workflow index
 - `workflows/idea_gate.md` — `/idea-gate` schema and routing contract
 - `templates/workflow_plan.md` — workflow plan template
+- `templates/runtime_status.md` — Level 1 Runtime status template
+- `logs/runtime_status.md` — workflow-level runtime status index

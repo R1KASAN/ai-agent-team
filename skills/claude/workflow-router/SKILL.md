@@ -19,8 +19,10 @@ Maps classified input to the correct workflow. Sequential routing only by defaul
 3. Assign: entry agent, context budget, artifact sequence, stop conditions.
 4. For any Aki-bound/build-bearing route, require Gate Scope Pre-Clarification: embed Expected Gates
    + Pre-Decide vs Defer in `workflow_plan.md` before Aki can start.
-5. Check parallel fanout conditions — if all 6 are not met, enforce sequential.
-6. Embed the routing decision in `workflow_plan.md` under the `agent_sequence` field.
+5. For any route beyond pure classification, embed `runtime_tracking` with
+   `runtime_mode: level_1_status_only` and update `logs/runtime_status.md`.
+6. Check parallel fanout conditions — if all 6 are not met, enforce sequential.
+7. Embed the routing decision in `workflow_plan.md` under the `agent_sequence` field.
 
 ## Parallel Fanout Rule
 
@@ -29,8 +31,17 @@ Parallel routing is forbidden unless all 6 conditions in `llm_wiki/token_optimiz
 ## Required Fields in workflow_plan.md
 
 - `workflow_id`, `entry_agent`, `agent_sequence`, `artifact_sequence`, `context_budget`, `stop_conditions`, `approval_points`, `workflow_type`
+- Runtime status routes: `runtime_tracking` with `runtime_mode`, `run_id`, `status_log`,
+  `agent_run_log_dir`, `current_status`, `current_agent`, `latest_artifact`, and `next_step`
 - For Aki-bound/build-bearing routes: `gate_scope_preclarification_required`, `expected_gates`, and
   `gate_decisions` with each gate marked `Pre-Decide` or `Defer`
+
+## Level 1 Runtime
+
+Level 1 Runtime records workflow status only. Use `logs/runtime_status.md` and
+`templates/runtime_status.md` for compact rows. `task_queue` is the `next_step` marker, and
+`artifact_return` is the latest artifact path. Do not spawn agents, schedule tasks, enable
+parallel/fanout, or paste full artifact/source/chat/vault content into runtime status.
 
 ## Gate Scope Pre-Clarification
 

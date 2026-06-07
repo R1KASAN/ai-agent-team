@@ -33,6 +33,16 @@ assumptions:
 
 risk_flags: []
 
+runtime_tracking:
+  runtime_mode: level_1_status_only
+  run_id: ""
+  status_log: logs/runtime_status.md
+  agent_run_log_dir: logs/agent_runs/
+  current_status: planned      # planned | running | awaiting_approval | blocked | complete | aborted
+  current_agent: Minori Lead Conductor
+  latest_artifact: ""
+  next_step: ""
+
 gate_scope_preclarification_required: false
 expected_gates: []
 # For Aki-bound/build-bearing routes, Minori must include Expected Gates + Pre-Decide vs Defer.
@@ -72,6 +82,15 @@ stop_conditions: []
 ```
 
 ---
+
+## Level 1 Runtime Tracking
+
+`runtime_tracking` is a status-only layer. It records workflow visibility in
+`logs/runtime_status.md` and must not spawn agents, schedule parallel work, or change routing.
+
+When `/idea-gate` proceeds beyond pure classification, Minori records `run_id`, `current_status`,
+`current_agent`, `latest_artifact`, and `next_step`. If no downstream handoff starts, keep the
+status at `planned` or `awaiting_approval` and stop.
 
 > Save to: `handoffs/workflow_plan_YYYYMMDD_NNN.md`
 > Archive completed plans to: `handoffs/archive/`

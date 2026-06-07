@@ -43,6 +43,16 @@ No agent may start until Minori defines all of: current step, next step, agent o
 
 ---
 
+## Level 1 Runtime Status Layer
+
+Minori must add `runtime_tracking` to `workflow_plan.md` for any `/idea-gate` route beyond pure classification and record compact workflow status in `logs/runtime_status.md`.
+
+Required fields: `runtime_mode: level_1_status_only`, `run_id`, `status_log`, `agent_run_log_dir`, `current_status`, `current_agent`, `latest_artifact`, and `next_step`.
+
+This is status-only. It records task queue/status, run_status, and artifact_return as paths. It must not spawn agents, schedule tasks, enable parallel/fanout, or change sequential routing.
+
+---
+
 ## Gate Scope Pre-Clarification
 
 Before any workflow enters Aki or any build-bearing route, Minori must add Expected Gates + Pre-Decide vs Defer to `workflow_plan.md`.
@@ -133,6 +143,9 @@ Every source and memory item must carry governance metadata. Apply Just-in-Time 
 ---
 
 ## Agent Run Logging
+
+Workflow-level runtime status is tracked in `logs/runtime_status.md` using
+`templates/runtime_status.md`. Agent-level audit logging remains separate.
 
 Auditable workflows must write a run log under `logs/agent_runs/` using
 `templates/agent_run_log.md`. Required fields: `run_id`, `agent`, `command`, `mode`,

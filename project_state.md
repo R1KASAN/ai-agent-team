@@ -6,7 +6,7 @@ status: setup_complete
 os_edition: "Startup Studio OS v1.0 (14 agents + Tessa conditional)"
 last_updated: "2026-06-08"
 current_workflow: none
-last_checkpoint: "chk-007 — Phase 1 e2e proof close-out: global subagent model override removed; Workflow retry executed; Test 4 closed as confirmed-diagnosed-and-blocked by args-stringification tool limitation"
+last_checkpoint: "chk-008 — Level 1 Runtime status layer added: runtime_tracking schema, logs/runtime_status.md, runtime proof, docs, and alignment validation"
 ---
 
 # Project State
@@ -79,6 +79,21 @@ None active. See `logs/risk_log.md`.
   Defer.
 - **Validation:** `scripts/validate_active_alignment.sh` checks the rule in active docs and runtime
   stubs.
+
+## Recent Changes (Level 1 Runtime Status Layer — 2026-06-08)
+
+- **Level 1 Runtime added:** workflow visibility now uses `runtime_tracking` in `workflow_plan.md`
+  plus compact workflow rows in `logs/runtime_status.md`.
+- **Status-only rule:** `level_1_status_only` records task queue/status, run_status, and
+  artifact_return paths only. It does not spawn agents, schedule tasks, enable parallel/fanout, or
+  change sequential routing.
+- **Runtime proof artifact:** `handoffs/workflow_plan_20260608_002.md` verifies `/idea-gate` emits
+  `runtime_tracking`, `expected_gates`, and `gate_decisions`; Aki remains blocked while a
+  Pre-Decide privacy gate is unresolved.
+- **Docs synced:** `HOW_TO_USE.md`, `README.md`, `CLAUDE.md`, `AGENTS.md`,
+  `AI_AGENT_TEAM_ARCHITECTURE.md`, `workflows/workflow_index.md`, Minori specs, `/idea-gate`, and
+  `workflow-router` now describe the same runtime rule.
+- **Validation:** `scripts/validate_active_alignment.sh` now checks Level 1 Runtime alignment.
 
 ## Recent Changes (Phase 1 e2e Proof Close-out — 2026-06-07)
 

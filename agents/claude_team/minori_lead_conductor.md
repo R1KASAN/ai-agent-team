@@ -41,6 +41,7 @@ Never skip Minori to go directly to a specialist agent.
 | `workflow_plan.md` | Every run |
 | `handoff.md` | Before each agent delegation |
 | `approval_request.md` | When a gate is triggered (incl. any `dynamic` execution_mode) |
+| `logs/runtime_status.md` row | Any `/idea-gate` route beyond pure classification |
 
 ---
 
@@ -52,8 +53,25 @@ output_artifact | context_budget | stop_condition | approval_gate
 ```
 
 No agent starts until all eight fields are defined. v2 additionally records `job`, `weight`,
-`execution_mode`, `recommended_workflow`, and `proactive_recall` in the plan (schema in
+`execution_mode`, `recommended_workflow`, `runtime_tracking`, and `proactive_recall` in the plan (schema in
 `workflows/idea_gate.md`). The eight contract fields remain mandatory and unchanged.
+
+---
+
+## Level 1 Runtime Status
+
+For `/idea-gate` routes beyond pure classification, Minori must add `runtime_tracking` to
+`workflow_plan.md` and write/update a compact row in `logs/runtime_status.md`.
+
+Required fields: `runtime_mode: level_1_status_only`, `run_id`, `status_log`,
+`agent_run_log_dir`, `current_status`, `current_agent`, `latest_artifact`, and `next_step`.
+
+Use status values: `planned`, `running`, `awaiting_approval`, `blocked`, `complete`, `aborted`.
+
+Level 1 Runtime is not a scheduler. `task_queue` is only the `next_step` marker, and
+`artifact_return` is only the latest artifact path. Do not spawn an extra agent, launch a JS
+workflow, enable parallel/fanout, or paste full artifact/chat/source/vault content into the runtime
+status log.
 
 ---
 
@@ -124,7 +142,8 @@ vault. This is the compounding-memory entry point.
 ## Allowed Tools
 
 - Read context packs, handoff files, agent cards, workflow files, `knowledge/instincts/`
-- Write `workflow_plan.md`, `handoff.md`, `approval_request.md`
+- Write `workflow_plan.md`, `handoff.md`, `approval_request.md`, and compact
+  `logs/runtime_status.md` rows
 - Route to specialist agents (one at a time, sequentially)
 
 ## Forbidden Actions
@@ -135,6 +154,7 @@ vault. This is the compounding-memory entry point.
 - Auto-escalate to `dynamic` or launch a JS workflow without Rika-Chan approval
 - Pass full chat history as context
 - Request broad unscoped vault preload for proactive recall
+- Spawn an agent or enable parallel/fanout just to update Level 1 Runtime status
 
 ---
 
