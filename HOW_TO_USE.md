@@ -69,6 +69,30 @@ Aki → Coda → Kyuuei
 
 ## Commands ทั้งหมด — ใช้เมื่อไหร่
 
+## ถ้าเพื่อน Git Clone มาใช้
+
+ให้สิทธิ์เพื่อนเข้าถึง private repo ก่อน แล้วให้รัน:
+
+```bash
+git clone https://github.com/R1KASAN/ai-agent-team.git
+cd ai-agent-team
+bash scripts/clone_ready_check.sh
+```
+
+ถ้า check ผ่าน ให้เปิด folder นี้ใน Claude Code แล้วเริ่มด้วย:
+
+```text
+/idea-gate [อะไรก็ได้]
+```
+
+สิ่งที่ใช้ได้ทันทีหลัง clone: operating contract, agents, slash commands, workflows, templates,
+architecture, Level 1 Runtime status, และ validation scripts.
+
+สิ่งที่ต้องตั้งค่าตามเครื่องเองถ้าจะใช้: `.claude/settings.local.json`, `.env`, NotebookLM-py,
+Obsidian, Graphify, external APIs, deploy target, payment provider, หรือ credential อื่นๆ.
+
+คู่มือสั้นสำหรับเครื่องใหม่อยู่ที่ `CLONE_QUICKSTART.md`
+
 **ถ้าไม่แน่ใจ ใช้ `/idea-gate [อะไรก็ได้]` เสมอ** — นี่คือ front door หลักของระบบ.
 คำสั่งอื่นเป็น shortcut สำหรับเวลาที่คุณรู้ route แล้วเท่านั้น.
 

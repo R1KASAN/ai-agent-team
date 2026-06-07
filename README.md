@@ -51,12 +51,22 @@ Raw Inbox → Graphify (entity/relation graph) → Obsidian Vault (human-readabl
 
 ## How to Start
 
-1. Open this repo in Claude Code
-2. Run: `/idea-gate`
-3. Describe your input — Minori will classify it and produce a Workflow Plan
-4. Review `workflow_plan.md` before any agent proceeds
-5. Confirm `runtime_tracking.runtime_mode: level_1_status_only` is present for logged workflows
-6. For Aki/build paths, confirm `expected_gates` and `gate_decisions` exist before technical planning
+1. Clone the repo and enter the folder:
+
+```bash
+git clone https://github.com/R1KASAN/ai-agent-team.git
+cd ai-agent-team
+bash scripts/clone_ready_check.sh
+```
+
+2. Open this repo in Claude Code
+3. Run: `/idea-gate`
+4. Describe your input — Minori will classify it and produce a Workflow Plan
+5. Review `workflow_plan.md` before any agent proceeds
+6. Confirm `runtime_tracking.runtime_mode: level_1_status_only` is present for logged workflows
+7. For Aki/build paths, confirm `expected_gates` and `gate_decisions` exist before technical planning
+
+> New machine setup: `CLONE_QUICKSTART.md`
 
 ---
 
@@ -83,6 +93,7 @@ Core workflows: `idea_gate` → `product_idea_debate` → `evidence_crosscheck` 
 > Full contract: `CLAUDE.md`
 > Approval gates: `governance/approval_gates.md`
 > Forbidden actions: `governance/forbidden_actions.md`
+> Clone readiness: `CLONE_QUICKSTART.md`
 
 ---
 

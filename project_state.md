@@ -6,7 +6,7 @@ status: setup_complete
 os_edition: "Startup Studio OS v1.0 (14 agents + Tessa conditional)"
 last_updated: "2026-06-08"
 current_workflow: none
-last_checkpoint: "chk-008 — Level 1 Runtime status layer added: runtime_tracking schema, logs/runtime_status.md, runtime proof, docs, and alignment validation"
+last_checkpoint: "chk-009 — Clone readiness added: quickstart doc, clone_ready_check.sh, README/HOW_TO_USE sync, validation and push"
 ---
 
 # Project State
@@ -94,6 +94,18 @@ None active. See `logs/risk_log.md`.
   `AI_AGENT_TEAM_ARCHITECTURE.md`, `workflows/workflow_index.md`, Minori specs, `/idea-gate`, and
   `workflow-router` now describe the same runtime rule.
 - **Validation:** `scripts/validate_active_alignment.sh` now checks Level 1 Runtime alignment.
+
+## Recent Changes (Clone Readiness — 2026-06-08)
+
+- **Clone onboarding added:** `CLONE_QUICKSTART.md` documents first-time setup for a new machine or
+  collaborator.
+- **Readiness check added:** `scripts/clone_ready_check.sh` verifies required commands, core docs,
+  `.claude/` runtime files, workflow templates, Level 1 Runtime files, and active alignment.
+- **Docs synced:** `README.md` and `HOW_TO_USE.md` now tell new users to run
+  `bash scripts/clone_ready_check.sh` after `git clone`.
+- **Local-only boundary clarified:** `.claude/settings.local.json`, `.env`, `.serena/`, credentials,
+  NotebookLM-py, Obsidian, Graphify, external APIs, deploy targets, and payment providers remain
+  per-machine setup and are not committed.
 
 ## Recent Changes (Phase 1 e2e Proof Close-out — 2026-06-07)
 
