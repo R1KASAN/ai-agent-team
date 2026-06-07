@@ -99,4 +99,8 @@ Core workflows: `idea_gate` → `product_idea_debate` → `evidence_crosscheck` 
 
 ## Setup Status
 
-> `setup_validation_checklist.md` — verify Phase 1 is complete before proceeding to Phase 2
+Phase 1-3 setup is complete. Current clone/runtime readiness is checked by
+`scripts/clone_ready_check.sh`, and active system alignment is checked by
+`scripts/validate_active_alignment.sh`.
+
+> Full setup history: `setup_validation_checklist.md`

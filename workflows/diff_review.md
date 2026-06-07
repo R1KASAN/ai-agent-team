@@ -33,7 +33,7 @@ Multi-lens diff review where independent agents evaluate the same changeset from
 
 ---
 
-## Proposed Flow (to be designed in Phase 3)
+## Proposed Flow (requires approval before activation)
 
 ```
 Diff artifact + scope definition (Rika-Chan approved)
@@ -79,5 +79,5 @@ to_define_before_use:
 
 ---
 
-> Full design: Phase 3
+> Full design requires a separate Rika-Chan-approved activation pass.
 > Policy reference: `llm_wiki/token_optimization_rules.md` → Dynamic Workflow section

@@ -4,7 +4,7 @@ phase: 3
 validated_by: "Rika-Chan"
 validated_at: "2026-06-06"
 status: setup_closeout_complete
-latest_change: "Startup Studio OS v1.0 pivot (Phases A–E) — see Pivot Validation section"
+latest_change: "Clone readiness + Level 1 Runtime status layer — see Current Readiness section"
 ---
 
 # Setup Validation Checklist — Phase 1, Phase 2, and Phase 3
@@ -51,7 +51,7 @@ Check every item before starting Phase 2. Mark `[x]` when confirmed.
 
 - [x] `governance/approval_gates.md` exists with all approval trigger items
 - [x] `governance/forbidden_actions.md` exists with all hard-stop actions
-- [x] `governance/data_governance_checklist.md` — **PENDING Phase 2** (required by §32; deferred)
+- [x] `governance/data_governance_checklist.md` exists (deferred in Phase 1, completed in Phase 2)
 
 ## LLM Wiki
 
@@ -237,10 +237,11 @@ Mark `[x]` when confirmed. Append-only; supersedes nothing above.
 - [x] `project_state.md` refreshed (was stale at Phase 1) → Phase 3 complete
 - [x] `last_checkpoint.md` advanced chk-002 → chk-003
 
-### Backlog (requires Rika-Chan approval — NOT actioned this sprint)
+### Backlog From chk-003 (resolved later)
 
-- [ ] Remove orphaned `.agents/` directory (44 unused skill files; not loaded by Claude Code; No-Overwrite Rule applies)
-- [ ] Install `caveman` skill (Trial-approved, not yet installed)
+- [x] Remove orphaned `.agents/` directory — resolved 2026-06-06
+- [x] Install `caveman` skill — resolved 2026-06-06
+- [x] Claude Code restart — resolved 2026-06-06
 
 ---
 
@@ -300,9 +301,24 @@ Mark `[x]` when confirmed. Append-only; supersedes nothing above. Pivot from 21-
 
 ### Deferred / Future Pass
 
-- [ ] Backlog from chk-003 still open: remove orphaned `.agents/` dir · install `caveman` · Claude Code restart
-- [ ] Review remaining v1 workflow files (governance_check, llm_wiki_update, kaizen_review, qa_review) for v2 agent-name consistency
-- [ ] `agents/agent_cards.md` cross-check vs new command set (next kaizen cycle)
+- [x] Backlog from chk-003 resolved: remove orphaned `.agents/` dir · install `caveman` · Claude Code restart
+- [x] Review remaining v1 workflow files (governance_check, llm_wiki_update, kaizen_review, qa_review) for v2 agent-name consistency
+- [x] `agents/agent_cards.md` cross-check vs new command set
+
+---
+
+## Current Readiness — 2026-06-08
+
+- [x] Level 1 Runtime status layer is active and status-only.
+- [x] `runtime_tracking` exists in `templates/workflow_plan.md`.
+- [x] `templates/runtime_status.md` exists.
+- [x] `logs/runtime_status.md` exists.
+- [x] `/idea-gate` runtime proof exists at `handoffs/workflow_plan_20260608_002.md`.
+- [x] Clone quickstart exists at `CLONE_QUICKSTART.md`.
+- [x] Clone readiness check exists at `scripts/clone_ready_check.sh`.
+- [x] Active alignment validator exists at `scripts/validate_active_alignment.sh`.
+- [x] `bash scripts/clone_ready_check.sh` passes.
+- [x] `./scripts/validate_active_alignment.sh` passes.
 
 ---
 

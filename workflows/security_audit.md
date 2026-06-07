@@ -34,7 +34,7 @@ integration review, or compliance requirement.
 
 ---
 
-## Proposed Flow (to be designed in Phase 3)
+## Proposed Flow (requires approval before activation)
 
 ```
 Audit scope definition (Rika-Chan approved)
@@ -76,5 +76,5 @@ to_define_before_use:
 
 ---
 
-> Full design: Phase 3
+> Full design requires a separate Rika-Chan-approved activation pass.
 > Policy reference: `llm_wiki/token_optimization_rules.md` → Dynamic Workflow section
