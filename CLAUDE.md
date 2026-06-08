@@ -49,6 +49,7 @@ cases where the owner already knows the intended route.
 | "ทำอะไรดี" / overwhelmed / stuck / `/next` | Mi→Ic |
 | "เคยเซฟ..." / "มีอะไรเกี่ยวกับ..." / `/recall` | Mi→Ts |
 | "สวัสดีตอนเช้า" / "what's new" / `/scout` | Mi→Hi |
+| Names a specific agent + one narrow question (e.g. "ขอ Yuki ท้าทาย X") / `job: consult` | Mi classifies `consult` → escalation check → single named agent (still Minori-gated; no bypass command). Full spec: `workflows/idea_gate.md` → Fast-Path Consult |
 | `/build [task]` | Ak→Co→QA→(Te if UI)→[Ri] |
 | `/memory [note]` | Mr (passive intake + mandatory graph update) |
 
@@ -94,6 +95,31 @@ Required runtime fields: `runtime_mode: level_1_status_only`, `run_id`, `status_
 
 This layer records task queue/status, run_status, and artifact_return as artifact paths only. It must
 not spawn agents, schedule tasks, enable parallel/fanout, or change sequential routing.
+
+Every route beyond pure classification must also leave a per-step `agent_run_log` in
+`logs/agent_runs/` (one file per step). All `logs/runtime_status.md` and `logs/agent_runs/` writes go
+through `scripts/safe_log_write.sh` — a locked (portable `mkdir`-mutex), append-only,
+read-back-verified helper written **inline by the orchestrator** (never a separate logger agent).
+This is the Layer 1 fix that prevents a concurrent write from silently dropping another run's row;
+the No-Overwrite Rule is honored via auto-suffix on `agent_runs/` collisions.
+
+## Telegram Gateway v1
+
+Telegram Gateway v1 is an interface layer, not an agent. It maps Telegram commands into compact
+`/idea-gate` queue items under `runtime/queue/` and keeps execution approval-first.
+
+Allowed v1 commands: `/idea <text>`, `/ask <agent> <question>`, `/status`, `/approve <run_id>`,
+`/reject <run_id>`, and `/budget <run_id> tiny|small|medium`.
+
+`/status`, `/approve`, `/reject`, and `/budget` must only read or update queue state; they must not
+invoke an LLM. The manual worker is `scripts/telegram_worker_run_once.sh`, processes at most one
+`approved` queue item, and writes a dispatch artifact for the Claude/Codex session. It does not turn
+Telegram into long-chat memory: store compact payloads and artifact paths only, never full Telegram
+chat history.
+
+Budget defaults: consult = `tiny`; `/idea` = `small`; `medium` requires `/budget` plus `/approve`.
+`large`, `dynamic`, parallel/fanout, webhook daemon, VPS daemon, multi-model router, and automatic
+scheduler are out of scope for v1 and must return to the normal Rika-Chan gate.
 
 ## Gate Scope Pre-Clarification
 
@@ -187,11 +213,15 @@ standalone agent), and Waste Reduction.
 **Claude Team:** `/product-idea-debate` `/evidence-crosscheck` `/product-idea-to-prd` `/prd-to-codex-tasks` `/governance-check` `/idea-pipeline`
 **Codex Team:** `/codex-implement` `/codex-test`
 **Optional owner-invokable utilities (not core flow):** `/codex-debug` `/codex-refactor` `/codex-pr` `/codex-security-check` `/codex-ship-check` (map to Coda / Kyuuei; archived agents' functions on demand)
+**Telegram interface:** `workflows/telegram_gateway.md` + `scripts/telegram_queue.sh` +
+`scripts/telegram_gateway_poll_once.sh` + `scripts/telegram_worker_run_once.sh` (approval-first
+queue; no LLM from status/approve/reject/budget).
 
 ## Claude Code Paths
 
 Human-readable: `agents/` `workflows/` `skills/` `llm_wiki/` `governance/` `templates/`
 Runtime: `.claude/agents/` `.claude/commands/` `.claude/skills/` `.claude/workflows/`
+Runtime queue: `runtime/queue/`
 Archived (capability retained as backend): `agents/_archive/`, `.claude/agents/_archive/`
 
 ## First Run Mode

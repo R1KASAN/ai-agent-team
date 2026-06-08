@@ -21,6 +21,7 @@ approval.
 
 - Routes input through Input Gatekeeper (Minori) to the correct workflow
 - Tracks workflow status with Level 1 Runtime (`runtime_tracking` + `logs/runtime_status.md`)
+- Supports Telegram Gateway v1 as an approval-first inbox/queue interface to `/idea-gate`
 - Challenges, validates, and plans product ideas before any build starts
 - Enforces sequential handoff: each agent produces an artifact before the next starts
 - Requires Gate Scope Pre-Clarification before any Aki/build path
@@ -66,6 +67,24 @@ bash scripts/clone_ready_check.sh
 6. Confirm `runtime_tracking.runtime_mode: level_1_status_only` is present for logged workflows
 7. For Aki/build paths, confirm `expected_gates` and `gate_decisions` exist before technical planning
 
+Optional Telegram Gateway v1 helpers:
+
+```bash
+bash scripts/telegram_queue.sh enqueue --user-id local --message-id 1 --text '/ask yuki challenge this'
+bash scripts/telegram_queue.sh status
+bash scripts/telegram_queue.sh approve <run_id>
+bash scripts/telegram_worker_run_once.sh
+```
+
+Telegram v1 is an inbox + approval queue only. It does not run a webhook/VPS daemon and does not
+invoke an LLM from `/status`, `/approve`, `/reject`, or `/budget`.
+
+Optional Telegram polling:
+
+```bash
+TELEGRAM_BOT_TOKEN=... TELEGRAM_ALLOWED_USER_ID=... bash scripts/telegram_gateway_poll_once.sh
+```
+
 > New machine setup: `CLONE_QUICKSTART.md`
 
 ---
@@ -84,6 +103,8 @@ Core workflows: `idea_gate` → `product_idea_debate` → `evidence_crosscheck` 
 - Sequential handoff is the default. Parallel requires Rika-Chan approval.
 - Level 1 Runtime is status-only: `logs/runtime_status.md` records run status and artifact paths,
   not a scheduler, fanout controller, or extra agent.
+- Telegram Gateway v1 is approval-first: queue files live in `runtime/queue/`, budget caps are
+  `tiny|small|medium`, and Telegram chat is not long-chat memory.
 - No agent may proceed without its required input artifact.
 - No Aki/build handoff may proceed without Expected Gates + Pre-Decide vs Defer in `workflow_plan.md`.
 - No product code in setup runs.

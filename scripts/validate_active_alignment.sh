@@ -91,6 +91,20 @@ check_present "level_1_status_only mode documented" "level_1_status_only" CLAUDE
 
 check_present "runtime_status artifact documented" "runtime_status\\.md" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md AI_AGENT_TEAM_ARCHITECTURE.md workflows/workflow_index.md workflows/idea_gate.md templates/runtime_status.md logs/runtime_status.md .claude/commands/idea-gate.md skills/claude/workflow-router/SKILL.md
 
+check_present "Telegram gateway documented" "Telegram Gateway|telegram_gateway" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/telegram_gateway.md templates/telegram_queue_item.md
+
+check_present "approval-first queue documented" "approval-first queue|approval-first.*queue|queue.*approval-first" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/telegram_gateway.md
+
+check_present "Telegram budget_cap documented" "budget_cap" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/telegram_gateway.md templates/telegram_queue_item.md
+
+check_present "Telegram worker_run_once documented" "telegram_worker_run_once\\.sh" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/telegram_gateway.md
+
+check_present "Telegram poll_once documented" "telegram_gateway_poll_once\\.sh" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/telegram_gateway.md
+
+check_present "Telegram no long-chat memory documented" "not long-chat memory|no long-chat memory|ไม่ใช่ long-chat memory" HOW_TO_USE.md README.md CLAUDE.md AGENTS.md workflows/workflow_index.md workflows/telegram_gateway.md templates/telegram_queue_item.md
+
+check_absent "Telegram state commands do not invoke LLM" "(/status|/approve|/reject|/budget).*may invoke an LLM|(/status|/approve|/reject|/budget).*can invoke an LLM|(/status|/approve|/reject|/budget).*triggers? an LLM|(/status|/approve|/reject|/budget).*ยิง LLM เอง" workflows/telegram_gateway.md CLAUDE.md AGENTS.md HOW_TO_USE.md README.md
+
 check_absent "Level 1 Runtime does not enable parallel default" "Level 1 Runtime.*enables parallel|level_1_status_only.*enables parallel|Level 1 Runtime.*enables fanout|level_1_status_only.*enables fanout|Level 1 Runtime.*parallel by default|level_1_status_only.*parallel by default"
 
 check_present "Aki-bound workflows block missing gate preclarification" "Gate Scope Pre-Clarification.*before Aki|Gate Scope Pre-Clarification.*stop before Aki|stop before Aki.*Gate Scope Pre-Clarification" workflows/product_idea_to_prd.md workflows/prd_to_codex_tasks.md .claude/commands/product-idea-to-prd.md .claude/commands/prd-to-codex-tasks.md

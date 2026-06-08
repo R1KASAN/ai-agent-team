@@ -6,7 +6,7 @@ context_budget: small
 required_input: any input from Rika-Chan — idea, topic, question, note, link, "ทำอะไรดี", "เคยเซฟ...", or a task
 optional_input: supporting artifact paths, constraints, risk notes, approval notes; never full chat history
 forbidden_actions: bypassing Minori, skipping artifact gates, starting downstream workflows automatically, auto-escalating to dynamic without Rika approval, using large/dynamic context without approval, overwriting existing files without approval, inventing agents
-produces: handoffs/workflow_plan_YYYYMMDD_NNN.md + logs/runtime_status.md row (+ approval_request.md if a gate or dynamic budget is triggered)
+produces: handoffs/workflow_plan_YYYYMMDD_NNN.md + logs/runtime_status.md row + logs/agent_runs/ entry per routed step (via scripts/safe_log_write.sh) (+ approval_request.md if a gate or dynamic budget is triggered; + handoffs/adhoc_<agent>_<timestamp>.md if job=consult)
 approval_gate: none for classification; required if selected route is strategic/financial/legal/privacy/security OR execution_mode = dynamic
 stop_condition: workflow_plan.md produced; no downstream workflow starts automatically; dynamic route → halt for Rika dynamic-budget approval
 ref: workflows/idea_gate.md · context.md · llm_wiki/dynamic_workflow_policy.md
@@ -23,6 +23,11 @@ The single front door. Type `/idea-gate [anything]` and Minori does three things
 Optional shortcuts (`/scout`, `/recall`, `/next`, `/idea`, `/memory`, `/research`, `/build`, plus
 Codex utilities) still work for users who already know the intended route. `/idea-gate` is the
 single canonical front door for everything else.
+
+Telegram Gateway v1 may create compact queue items that map to this command. Those queue items are
+interface artifacts only: `/status`, `/approve`, `/reject`, and `/budget` never invoke an LLM, and
+`scripts/telegram_worker_run_once.sh` dispatches at most one approved item into a compact
+`/idea-gate` handoff artifact.
 
 > **Read `context.md` first.** It defines the balance rules this command must never break.
 
@@ -42,8 +47,16 @@ Classify to exactly one job (maps to existing workflow IDs in `workflows/idea_ga
 | `idea-debate` | a product/project idea to validate | Yu→NV→So→Bu→Po pipeline |
 | `build` | approved brief/PRD → implement | Ak→Co→QA (→Te if UI) |
 | `governance` | privacy/legal/security question | governance_check |
+| `consult` | names a *specific* agent + one narrow question — "ขอ Yuki ท้าทาย X", "Sora มองมุมกลยุทธ์ Y" | that named agent, `single_agent` (see Fast-Path Consult in `workflows/idea_gate.md`) |
 
 If ambiguous: low-risk → proceed with labeled assumptions; high-risk → ask ≤3 questions.
+
+**Consult fast-path:** `consult` skips the full plan (no 8-field `workflow_plan.md`, no
+`agent_sequence`, no Gate Scope Pre-Clarification — it never reaches Aki). Minori writes one
+`logs/runtime_status.md` row tagged `runtime_mode: adhoc_consult`; output is
+`handoffs/adhoc_<agent-key>_<timestamp>.md`. **Escalation guard:** a build-bearing/strategic/
+gate-triggering ask in disguise → Minori stops and redirects to the full pipeline. Full spec:
+**Fast-Path Consult** in `workflows/idea_gate.md`.
 
 ---
 
@@ -112,6 +125,9 @@ For any route beyond pure classification, record Level 1 Runtime status:
 - NotebookLM-py is not a memory layer and not a truth source; Nova-V must verify any output before
   Mira writes `knowledge/research/[slug].md`.
 - Routed work that proceeds beyond pure classification must create an agent run log in
-  `logs/agent_runs/` using `templates/agent_run_log.md`.
+  `logs/agent_runs/` using `templates/agent_run_log.md` — written inline by the orchestrator via
+  `scripts/safe_log_write.sh agent-run`, one file per routed step (pipeline and consult).
 - Routed work beyond pure classification must also record workflow-level status in
-  `logs/runtime_status.md` using `templates/runtime_status.md`.
+  `logs/runtime_status.md` using `templates/runtime_status.md`, written via
+  `scripts/safe_log_write.sh status` (locked, append-only, read-back-verified — the Layer 1 fix that
+  prevents a concurrent write from dropping another run's row).

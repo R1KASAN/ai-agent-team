@@ -38,6 +38,8 @@ Per-agent output upgrades (viability score, ADR, prototype direction, evaluator 
 - **No-Overwrite Rule** — existing files get a `.draft.md` sibling; owner approves the swap.
 - **Token & context economy** — smallest useful workflow; Just-in-Time context only; artifact
   references over pasted content; never dump full chat/repo/vault into a run.
+- **Telegram Gateway v1** — inbox + approval-first queue only; no LLM from `/status`, `/approve`,
+  `/reject`, or `/budget`; no long-chat memory or scheduler.
 
 ## Dynamic Workflow — not the default
 

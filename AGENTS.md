@@ -53,6 +53,29 @@ This is status-only. It records task queue/status, run_status, and artifact_retu
 
 ---
 
+## Telegram Gateway v1
+
+Telegram Gateway is an interface layer, not a new agent. It maps Telegram commands into compact
+`/idea-gate` queue items under `runtime/queue/` and keeps execution approval-first.
+
+Allowed commands: `/idea <text>`, `/ask <agent> <question>`, `/status`, `/approve <run_id>`,
+`/reject <run_id>`, and `/budget <run_id> tiny|small|medium`.
+
+`/status`, `/approve`, `/reject`, and `/budget` must never invoke an LLM. They only read or update
+queue state. The optional poller is `scripts/telegram_gateway_poll_once.sh`; it reads Telegram
+updates and calls the queue helper only. The manual worker is `scripts/telegram_worker_run_once.sh`;
+it processes at most one `approved` queue item and writes a dispatch artifact for the Claude/Codex
+session.
+
+Default budgets: consult = `tiny`; `/idea` = `small`; `medium` requires budget update + approval.
+`large`, `dynamic`, parallel/fanout, webhook daemon, VPS daemon, multi-model router, and automatic
+scheduler are out of scope for v1. Telegram chat is not memory; store compact payloads and artifact
+paths only, never full chat history.
+
+> Flow: `workflows/telegram_gateway.md`
+
+---
+
 ## Gate Scope Pre-Clarification
 
 Before any workflow enters Aki or any build-bearing route, Minori must add Expected Gates + Pre-Decide vs Defer to `workflow_plan.md`.
@@ -175,6 +198,7 @@ Codex Team: `/codex-implement` `/codex-test` `/codex-debug` `/codex-refactor` `/
 
 Human-readable: `agents/` `workflows/` `skills/` `llm_wiki/` `governance/` `templates/`
 Runtime (Phase 3): `.claude/agents/` `.claude/commands/` `.claude/skills/` `.claude/workflows/`
+Runtime queue: `runtime/queue/`
 
 ---
 

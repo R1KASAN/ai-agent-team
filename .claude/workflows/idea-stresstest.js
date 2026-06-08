@@ -29,11 +29,23 @@ export const meta = {
 //   { idea: string, artifacts?: string[], weight?: 'heavy'|'strategic', notebooklm_approved?: boolean }
 // ---------------------------------------------------------------------------
 
-const idea = (args && args.idea) || (typeof args === 'string' ? args : '')
-const artifacts = (args && args.artifacts) || []
-const weight = (args && args.weight) || 'heavy'
-const nlmApproved = !!(args && args.notebooklm_approved)
-const rikaApproved = !!(args && args.rika_dynamic_approved)
+// --- args normalizer (BUGFIX 2026-06-08) -----------------------------------
+// The Workflow tool delivers `args` to the script as a JSON-encoded STRING, not an object —
+// confirmed by the args-probe run on 2026-06-08 (typeof args === 'string' even when the caller
+// passes a proper JSON object). Without this parse, args.rika_dynamic_approved was always
+// undefined/falsy, so every dynamic run aborted instantly with `dynamic_not_approved`. Parse
+// defensively so the script works under BOTH calling conventions (string-encoded or real object).
+let A = args
+if (typeof A === 'string') {
+  try { A = JSON.parse(A) } catch (e) { A = { idea: A } }
+}
+A = A || {}
+
+const idea = A.idea || ''
+const artifacts = A.artifacts || []
+const weight = A.weight || 'heavy'
+const nlmApproved = !!A.notebooklm_approved
+const rikaApproved = !!A.rika_dynamic_approved
 
 // --- HARD GUARD (Flag A): no Rika dynamic approval → abort before ANY work. ----------------
 // This is a runtime precondition, not prose. Without it, no fan-out agent starts, no

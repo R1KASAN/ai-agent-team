@@ -26,18 +26,25 @@ Rika-Chan input (anything)
 → Minori: pick execution_mode (single_agent | sequential_handoff | dynamic_workflow)
 → Minori: produce workflow_plan.md (8-field Orchestrator Contract + weight + execution_mode + runtime_tracking)
 → if route proceeds beyond pure classification → write/update logs/runtime_status.md (Level 1 Runtime)
+→ if job = consult → escalation check → route single_agent (adhoc_consult), skip full plan (see below)
 → if execution_mode = dynamic_workflow OR route is high-risk → approval_request.md + STOP for Rika
 → else → route to first agent
+→ after each routed step returns → orchestrator writes one logs/agent_runs/ entry (see below)
 ```
 
 ---
 
 ## Job Classification
 
-Exactly one of: `recall · next · scout · memory · research · idea-debate · build · governance`
-(see job table in `.claude/commands/idea-gate.md`). These map to the existing workflow IDs:
+Exactly one of: `recall · next · scout · memory · research · idea-debate · build · governance ·
+consult` (see job table in `.claude/commands/idea-gate.md`). These map to the existing workflow IDs:
 `product_idea_debate · evidence_crosscheck · product_idea_to_prd · prd_to_codex_tasks ·
-codex_build_loop · qa_review · governance_check · memory_intake`.
+codex_build_loop · qa_review · governance_check · memory_intake`. `consult` has no full pipeline
+workflow ID — it is the lightweight single-agent lane (see **Fast-Path Consult** below).
+
+| Job | Trigger signal | Routes toward |
+|---|---|---|
+| `consult` | Owner names a *specific* agent + asks one narrow question — e.g. "ขอ Yuki ท้าทายเรื่อง X หน่อย", "Sora มองมุมกลยุทธ์ของ Y ยังไง" | that named agent directly, `single_agent` mode |
 
 ## Weight Classification
 
@@ -114,6 +121,79 @@ For any `/idea-gate` route beyond pure classification, Minori must record `runti
 - `task_queue` is represented by `next_step`; this is a marker, not a scheduler.
 - `artifact_return` is represented by `latest_artifact`; record paths only, not artifact bodies.
 - Level 1 Runtime must not spawn agents, launch dynamic workflows, or enable parallel/fanout.
+
+## Fast-Path Consult (ad-hoc single-agent)
+
+`job: consult` is a Minori-gated *fast lane* for "ask one named agent one narrow question". The
+Routing Law is intact — Minori still classifies first — but the heavy machinery that doesn't apply to
+a single ask is skipped.
+
+**Flow:** `Rika input names an agent + one question → Minori classifies job: consult → escalation
+check (below) → route single_agent to the named agent → agent returns one artifact → orchestrator
+writes the agent_run_log entry.`
+
+**Minimal-artifact rule (what makes it fast):**
+- No full 8-field `workflow_plan.md`, no `agent_sequence`, no Gate Scope Pre-Clarification (a consult
+  never reaches Aki).
+- Minori writes **one row** to `logs/runtime_status.md` via the append+verify helper (below) tagged
+  `runtime_mode: adhoc_consult` — structurally distinct from `level_1_status_only` pipeline rows, so
+  it can never be mistaken for or overwrite a live pipeline's status.
+- Output artifact uses a **collision-proof name**: `handoffs/adhoc_<agent-key>_<YYYYMMDD_HHMMSS>.md`
+  (e.g. `handoffs/adhoc_yuki_20260608_143000.md`). Never a canonical pipeline name
+  (`idea_challenge_brief.md`, `verified_evidence_pack.md`, `strategic_lens.md`, …).
+- Per **Agent Run Log Requirement** below, the orchestrator still writes one compact `agent_run_log`
+  entry — even the fast path is fully audited.
+
+**Escalation guard (stop-and-redirect — this keeps the fast-path safe):** if Minori or the named
+agent recognizes the ask is actually build-bearing, strategic, or gate-triggering in disguise — e.g.
+"ขอ Aki ลุยสร้างเลย", or "Sora บอกว่าควร kill โปรเจกต์นี้ไหม" used to *make* a kill/pivot decision
+rather than get a perspective — Minori must **stop and redirect** to the full `/idea-gate` pipeline:
+*"this needs the full pipeline, not a quick consult."* A consult must never substitute for a
+Rika-Chan hard gate (strategic pivot, kill-signal, legal/privacy, security, payment/deploy).
+
+## Agent Run Log Requirement
+
+Every route beyond pure classification — full pipeline steps **and** fast-path consults — must leave
+a per-step audit record in `logs/agent_runs/`, mirroring how `logs/runtime_status.md` already works.
+
+- Immediately after each `agent_sequence` step returns its artifact and **before** spawning the next
+  step, the orchestrator writes one compact entry (10–15 lines, paths only — no pasted content) using
+  `templates/agent_run_log.md`.
+- The entry is written **inline by the orchestrating session** via the append+verify helper — never
+  by spawning a separate "logger" agent (the same rule that already forbids an extra agent call for
+  runtime status).
+- One step = one file: `logs/agent_runs/<run_id>.md` where `run_id = YYYYMMDD-HHMMSS-command-agent`.
+
+## Append + Verify Write Protocol (Layer 1 — the real fix for row loss)
+
+`logs/runtime_status.md` is a single shared table; an ad-hoc full-file rewrite (or two writers) can
+silently drop another run's row. All writes to it and to `logs/agent_runs/` go through one locked,
+append-only, read-back-verified path: **`scripts/safe_log_write.sh`**.
+
+- `safe_log_write.sh status append --run-id <id> --row '<one-line row>'` — locks
+  (portable `mkdir`-mutex; no `flock` dependency), appends the row after the last data row, then
+  **reads back** to confirm row count went up by exactly one and `<id>` appears exactly once. On any
+  mismatch it leaves the live file untouched and exits non-zero (fail loud, never silently proceed).
+- `safe_log_write.sh status update --run-id <id> --row '<row>'` — status transition
+  (`planned→running→complete`); edits only the line matching `<id>`, verifies exactly one match.
+- `safe_log_write.sh agent-run --run-id <id> < entry.md` — writes
+  `logs/agent_runs/<id>.md`; **no-overwrite** (auto-suffixes `-2`, `-3`… if the path exists) per the
+  No-Overwrite Rule, then verifies the file is non-empty.
+
+## Usage Guidance (Layer 2 — prevention at the source)
+
+Rules that keep the race from arising in the first place:
+
+- **Sequential-by-default = one writer at a time.** Do not run two concurrent sessions that both
+  write `logs/runtime_status.md`. The lock is the backstop, not a licence for fanout.
+- **One `run_id` per run; one file per step** in `logs/agent_runs/`. Never share a file across runs
+  except the single status index.
+- **Edit only your own run's row**, identified by `run_id`. Never rewrite the whole table to change
+  one row.
+- **Paths, never bodies.** Keep every row one line (artifact paths only) so append + verify stays
+  cheap and reliable — a multi-line paste defeats line-based append/verify.
+- **Distinct ad-hoc naming** (`adhoc_<agent-key>_<timestamp>`) so a consult can never collide with a
+  pipeline canonical name.
 
 ## Gate Scope Pre-Clarification
 

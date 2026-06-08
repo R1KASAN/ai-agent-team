@@ -14,6 +14,10 @@ This system is a **hierarchical multi-agent orchestrator**. Minori is the centra
 ```mermaid
 flowchart TD
     U["Rika-Chan / Human Owner"] --> IG["/idea-gate"]
+    U --> TG["Telegram Gateway v1<br/>Inbox + approval queue"]
+    TG --> TQ["runtime/queue/<br/>one file per request"]
+    TQ --> TW["Manual worker<br/>telegram_worker_run_once.sh"]
+    TW --> IG
     IG --> MI["Minori Lead Conductor<br/>Orchestrator / Input Gatekeeper"]
 
     MI --> WP["workflow_plan.md<br/>job + weight + route + gates"]
@@ -180,6 +184,27 @@ flowchart TD
     QA --> SHIP["Ship check + Rika-Chan approval"]
 ```
 
+## 6.1 Telegram Gateway v1
+
+```mermaid
+flowchart TD
+    TG["Telegram command"] --> MAP["Command mapping<br/>/idea or /ask"]
+    MAP --> Q["runtime/queue/<run_id>.md<br/>approval-first queue"]
+    Q --> STATUS["/status<br/>read queue only"]
+    Q --> APPROVE["/approve /reject /budget<br/>state only"]
+    APPROVE --> WORKER["scripts/telegram_worker_run_once.sh<br/>manual foreground worker"]
+    WORKER --> DISPATCH["handoffs/telegram_dispatch_<run_id>.md"]
+    DISPATCH --> IG["/idea-gate in Claude/Codex session"]
+
+    STATUS -.-> NO1["No LLM"]
+    APPROVE -.-> NO2["No LLM"]
+    Q -.-> NO3["No long-chat memory"]
+    WORKER -.-> NO4["No scheduler / no fanout"]
+```
+
+Telegram Gateway is an interface layer, not a new agent. It keeps Telegram as inbox + approval
+console while preserving Minori-first routing, budget caps, and no long-chat memory.
+
 ## 7. Agent Team Map
 
 ```mermaid
@@ -235,6 +260,8 @@ mindmap
 - `AGENTS.md` — root agent instructions
 - `workflows/workflow_index.md` — active workflow index
 - `workflows/idea_gate.md` — `/idea-gate` schema and routing contract
+- `workflows/telegram_gateway.md` — Telegram inbox + approval-first queue contract
 - `templates/workflow_plan.md` — workflow plan template
 - `templates/runtime_status.md` — Level 1 Runtime status template
+- `templates/telegram_queue_item.md` — Telegram queue item schema
 - `logs/runtime_status.md` — workflow-level runtime status index

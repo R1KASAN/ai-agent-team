@@ -24,6 +24,11 @@ Mr Mira · Hi Hikari · Ts Tsumugi · Ic Ichika
 **Codex Team:** Ak Aki · Co Coda · QA Kyuuei
 **Conditional:** Te Tessa (has_ui_component → after Kyuuei)
 
+> **Out-of-roster (do not count as team drift):** `.claude/agents/impeccable-manual-edit-applier.md`
+> is a **personal Claude Code skill** the owner installed for their own use. It is NOT part of the
+> AI Agent Team and is intentionally absent from CLAUDE.md / agent_cards.md / system_prompt_v1.md.
+> Future reviews: ignore this file when reconciling the roster count.
+
 ## Active Workflow
 
 None. Run `/idea-gate` to begin any work, or a direct-intent command (`/scout` `/recall` `/next` `/memory` `/idea` `/build`).
@@ -56,6 +61,30 @@ None active. See `logs/risk_log.md`.
 | Evidence-Pipeline Upgrade — 2026-06-06 | Complete | idea-pipeline; Nova/Vera v1.2; notebooklm-py |
 | **Startup Studio OS v1.0 Pivot — 2026-06-06** | **Complete** | **Phases A–E: 14-agent roster, Nova-V merge, 6 new commands, /build, swaps live** |
 
+## Recent Changes (System Review Fixes — 2026-06-08)
+
+- **[1] `args`-as-string bug — now fixed at the SCRIPT level (not just worked around).** Re-probed
+  the top-level `Workflow` tool: `args` is still delivered as a JSON-encoded **string** even when the
+  caller passes a real object (probe: `typeof args === "string"`). Added a defensive
+  `JSON.parse` normalizer at the top of `.claude/workflows/idea-stresstest.js` (`let A = args; if
+  (typeof A === 'string') A = JSON.parse(A)`). Verified: `rika_dynamic_approved` now resolves
+  `true` → `would_abort: false`. This **supersedes the launcher-wrapper workaround** (row 47) — the
+  script now works under both the top-level tool and the inline launcher. Pattern to reuse in any
+  future `.js` workflow that reads `args`.
+- **[2] Roster drift cleared (false positive).** `.claude/agents/impeccable-manual-edit-applier.md`
+  is the owner's **personal Claude Code skill**, not a team agent. Recorded as out-of-roster in the
+  Active Roster note so future reviews don't miscount it as drift. No contract change — roster
+  stays 15.
+- **[4] Blocked proof run closed.** `run-20260608-002` in `logs/runtime_status.md` was a Level 1
+  Runtime gate-enforcement **proof**, not a live job. Marked `closed_proof_verified` with an
+  explanatory note so the status table no longer shows a phantom blocked job.
+- **[3] Governance-log ownership fixed** (owner decision: "archive kaizen, keep risk", 2026-06-08).
+  `logs/kaizen_log.md` → `archive/kaizen_log_archived_20260608/` (Kaizen is not a team agent;
+  reversible, MANIFEST records dangling refs + that full Kaizen removal is a separate task).
+  `logs/risk_log.md` kept and re-attributed: `maintained_by` Gina → Rika-Chan, `appended_by` →
+  Minori · Nova-V · Kyuuei · Rika-Chan (v1.1). Governance/security functions preserved via
+  Rika-Chan hard gates + Kyuuei backend check per CLAUDE.md archived-agents table.
+
 ## Recent Changes (God Mode Pipeline — 2026-06-06)
 
 - **notebooklm-py v0.7.0** installed on Python 3.14 (`/opt/homebrew/bin/python3.14 -m notebooklm`).
@@ -79,6 +108,30 @@ None active. See `logs/risk_log.md`.
   Defer.
 - **Validation:** `scripts/validate_active_alignment.sh` checks the rule in active docs and runtime
   stubs.
+
+## Recent Changes (Robust Audit Logging + Consult Fast-Path — 2026-06-08)
+
+- **Layer 1 (the real fix) — `scripts/safe_log_write.sh`:** all `logs/runtime_status.md` and
+  `logs/agent_runs/` writes now go through one locked (portable `mkdir`-mutex, no `flock` dependency),
+  append-only, read-back-verified helper. Prevents a concurrent write from silently dropping another
+  run's row; fails loud (live file untouched) on any verify mismatch. `agent-run` mode is no-overwrite
+  (auto-suffix on collision). Tested: serialized concurrent appends, in-place update, auto-suffix,
+  failure cases.
+- **Layer 2 (prevention) — Usage Guidance:** one-writer-at-a-time, one `run_id`/one file per step,
+  edit-own-row-only, paths-not-bodies, distinct `adhoc_<agent>_<timestamp>` naming. Documented in
+  `workflows/idea_gate.md` and `templates/runtime_status.md`.
+- **Agent-run-log gap closed:** every routed step (pipeline + consult) writes one
+  `logs/agent_runs/<run_id>.md` inline via the helper — never a separate logger agent. Was: dir empty
+  except `.gitkeep` despite the contract mandating per-step logs.
+- **Consult fast-path:** new `job: consult` — Minori-gated single-agent lane (no full
+  `workflow_plan.md`, no `agent_sequence`, no Gate Scope Pre-Clarification; never reaches Aki). Writes
+  one `runtime_mode: adhoc_consult` row; output `handoffs/adhoc_<agent-key>_<timestamp>.md`
+  (collision-proof). Escalation guard: build-bearing/strategic/gate-triggering asks in disguise are
+  stopped and redirected to the full pipeline. No new bypass command — front door preserved.
+- **Docs synced (8 files, draft→review→swap):** `CLAUDE.md`, `workflows/idea_gate.md`,
+  `workflows/workflow_index.md`, `templates/runtime_status.md`, `templates/agent_run_log.md`, both
+  Minori specs, `.claude/commands/idea-gate.md`.
+- **Validation:** `scripts/validate_active_alignment.sh` still passes on the updated live files.
 
 ## Recent Changes (Level 1 Runtime Status Layer — 2026-06-08)
 

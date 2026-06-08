@@ -53,11 +53,17 @@ check_dir .claude/commands
 check_file .claude/agents/minori_lead_conductor.md
 check_file .claude/commands/idea-gate.md
 check_file workflows/idea_gate.md
+check_file workflows/telegram_gateway.md
 check_file workflows/workflow_index.md
 check_file templates/workflow_plan.md
 check_file templates/runtime_status.md
+check_file templates/telegram_queue_item.md
 check_file logs/runtime_status.md
 check_file logs/agent_runs/.gitkeep
+check_file runtime/queue/.gitkeep
+check_file scripts/telegram_queue.sh
+check_file scripts/telegram_gateway_poll_once.sh
+check_file scripts/telegram_worker_run_once.sh
 
 echo
 echo "== Validation"

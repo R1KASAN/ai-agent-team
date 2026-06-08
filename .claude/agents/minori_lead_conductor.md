@@ -16,7 +16,7 @@ ref: agents/claude_team/minori_lead_conductor.md · workflows/idea_gate.md · co
 
 First agent in every workflow. Now classifies on **two axes** and routes by cost:
 
-1. **Job** — recall · next · scout · memory · research · idea-debate · build · governance
+1. **Job** — recall · next · scout · memory · research · idea-debate · build · governance · consult
 2. **Weight** — tiny · small · medium · heavy · strategic
 
 Produces `workflow_plan.md` with all 8 Orchestrator Contract fields **plus `weight` and
@@ -37,6 +37,26 @@ scoped JIT context, never loading the full vault). No other agent acts until thi
 compact row in `logs/runtime_status.md`. This tracks task queue/status, run_status, and
 artifact_return as paths only. It must not spawn agents, schedule tasks, enable parallel/fanout, or
 change routing.
+
+**Telegram Gateway v1:** Telegram is an interface layer, not an agent. It writes compact queue items
+under `runtime/queue/` and maps `/idea <text>` or `/ask <agent> <question>` into `/idea-gate`
+payloads. `/status`, `/approve`, `/reject`, and `/budget` update queue state only and never invoke
+an LLM. The manual worker dispatches at most one approved queue item into a handoff artifact for the
+Claude/Codex session.
+
+**Consult fast-path:** `job: consult` is a Minori-gated lane for "ask one named agent one narrow
+question". Minori still classifies first, but skips the heavy machinery — no full 8-field
+`workflow_plan.md`, no `agent_sequence`, no Gate Scope Pre-Clarification (a consult never reaches
+Aki). Minori writes one `logs/runtime_status.md` row tagged `runtime_mode: adhoc_consult`; the agent
+output uses the collision-proof name `handoffs/adhoc_<agent-key>_<YYYYMMDD_HHMMSS>.md`.
+**Escalation guard:** if the ask is build-bearing, strategic, or gate-triggering in disguise (e.g.
+"ขอ Aki ลุยสร้างเลย", or a Sora kill/pivot *decision*), Minori stops and redirects to the full
+pipeline — a consult never substitutes for a Rika-Chan hard gate.
+
+**Audit logging (Layer 1):** all `logs/runtime_status.md` and `logs/agent_runs/` writes go through
+`scripts/safe_log_write.sh` (locked, append-only, read-back-verified). After each routed step returns
+— full pipeline **and** consult — Minori writes one `logs/agent_runs/<run_id>.md` entry inline via
+that helper, never by spawning a logger agent.
 
 **Gate Scope Pre-Clarification:** before any Aki-bound/build-bearing route, Minori must add
 **Expected Gates + Pre-Decide vs Defer** to `workflow_plan.md`. Scan auth, payments, database,

@@ -21,8 +21,10 @@ Maps classified input to the correct workflow. Sequential routing only by defaul
    + Pre-Decide vs Defer in `workflow_plan.md` before Aki can start.
 5. For any route beyond pure classification, embed `runtime_tracking` with
    `runtime_mode: level_1_status_only` and update `logs/runtime_status.md`.
-6. Check parallel fanout conditions — if all 6 are not met, enforce sequential.
-7. Embed the routing decision in `workflow_plan.md` under the `agent_sequence` field.
+6. If input arrived through Telegram Gateway v1, treat `runtime/queue/<run_id>.md` as an interface
+   artifact only; do not treat Telegram as memory or as a scheduler.
+7. Check parallel fanout conditions — if all 6 are not met, enforce sequential.
+8. Embed the routing decision in `workflow_plan.md` under the `agent_sequence` field.
 
 ## Parallel Fanout Rule
 
@@ -42,6 +44,13 @@ Level 1 Runtime records workflow status only. Use `logs/runtime_status.md` and
 `templates/runtime_status.md` for compact rows. `task_queue` is the `next_step` marker, and
 `artifact_return` is the latest artifact path. Do not spawn agents, schedule tasks, enable
 parallel/fanout, or paste full artifact/source/chat/vault content into runtime status.
+
+## Telegram Gateway v1
+
+Telegram Gateway maps `/idea <text>` and `/ask <agent> <question>` into compact `/idea-gate` queue
+items under `runtime/queue/`. `/status`, `/approve`, `/reject`, and `/budget` are state-only commands
+and must not invoke an LLM. The manual worker `scripts/telegram_worker_run_once.sh` processes at most
+one approved item and writes a dispatch artifact for the Claude/Codex session.
 
 ## Gate Scope Pre-Clarification
 

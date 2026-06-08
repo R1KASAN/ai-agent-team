@@ -1,13 +1,15 @@
 ---
 log: risk_log
-maintained_by: Gina Governance Guardian
-appended_by: Gina · Vera · Minori · Seco
-version: "1.0"
+maintained_by: Rika-Chan Decision Gate
+appended_by: Minori · Nova-V · Kyuuei · Rika-Chan
+version: "1.1"
+note: "Owner re-attributed 2026-06-08 from archived Gina/Vera/Seco to active agents. Governance + security functions are preserved via Rika-Chan hard gates, Kyuuei backend security check, and governance/ docs (see CLAUDE.md archived-agents table)."
 ---
 
 # Risk Log
 
-Record every risk identified during any workflow. High-severity risks must be reviewed by Gina and surfaced to Rika-Chan before the workflow proceeds past the relevant gate.
+Record every risk identified during any workflow. High-severity risks must be reviewed at the
+Rika-Chan hard gate and surfaced to the owner before the workflow proceeds past the relevant gate.
 
 ## Entry Format
 
@@ -36,6 +38,6 @@ Record every risk identified during any workflow. High-severity risks must be re
 
 ## Risks
 
-<!-- Entries appended here by Gina, Vera, Minori, or Seco during live workflows. -->
+<!-- Entries appended here by Minori, Nova-V, Kyuuei, or Rika-Chan during live workflows. -->
 <!-- Most recent entry at top. -->
 

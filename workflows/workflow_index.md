@@ -24,6 +24,20 @@ artifact_return as compact artifact paths in `logs/runtime_status.md`.
 - For `/idea-gate` beyond pure classification, Minori records `runtime_tracking` in
   `workflow_plan.md` and updates the runtime status row.
 
+## Telegram Gateway v1
+
+Telegram Gateway v1 is an approval-first inbox and queue interface to `/idea-gate`; it is not a new
+agent, scheduler, or long-chat memory layer.
+
+- Queue item files live in `runtime/queue/`.
+- Spec: `workflows/telegram_gateway.md`.
+- Queue helper: `scripts/telegram_queue.sh`.
+- Optional poller: `scripts/telegram_gateway_poll_once.sh`.
+- Manual worker: `scripts/telegram_worker_run_once.sh` processes at most one `approved` item.
+- `/status`, `/approve`, `/reject`, and `/budget` update state only and must not invoke an LLM.
+- `budget_cap` values are `tiny`, `small`, and `medium`; `large`/`dynamic` return to the normal
+  Rika-Chan gate.
+
 ## Canonical Front Door + Optional Shortcuts
 
 | Slash Command | Route | Purpose | Key Output |
@@ -38,6 +52,13 @@ artifact_return as compact artifact paths in `logs/runtime_status.md`.
 
 > Commands below `/idea-gate` are optional shortcuts/utilities. They do not replace the canonical
 > front door and still obey Minori-first routing, artifact gates, and approval gates.
+
+**Ad-hoc single-agent consults** route through `/idea-gate` with `job: consult` (no new slash
+command — the one canonical front door is preserved). Minori classifies, skips the full pipeline
+machinery, writes one `logs/runtime_status.md` row tagged `runtime_mode: adhoc_consult`, and routes
+`single_agent` to the named agent; output is `handoffs/adhoc_<agent-key>_<timestamp>.md`. A
+build-bearing/strategic/gate-triggering ask in disguise is stopped and redirected to the full
+pipeline. Spec: **Fast-Path Consult** in `workflows/idea_gate.md`.
 
 ## Proposed Knowledge Channel (not active until separately approved)
 
@@ -56,7 +77,11 @@ Files required before activation: `.claude/commands/{ask,maintain,check,outputs}
 Workflow-level runtime status is tracked separately in `logs/runtime_status.md`. Agent-level audit
 logs remain under `logs/agent_runs/`.
 
-Write run logs to `logs/agent_runs/` with `templates/agent_run_log.md`.
+Write run logs to `logs/agent_runs/` with `templates/agent_run_log.md`, **inline by the orchestrator
+via `scripts/safe_log_write.sh agent-run`** (one file per routed step; no-overwrite; verified) — not
+by spawning a separate logger agent. Both this and the `logs/runtime_status.md` row use the same
+locked, append-only, read-back-verified helper (Layer 1 — prevents a concurrent write from dropping
+another run's row).
 
 Required fields: `run_id`, `agent`, `command`, `mode`, `files_read`, `files_written`,
 `sources_used`, `approval_gates_hit`, `notebooklm_mission_info`, and `final_artifact_paths`.
@@ -111,6 +136,7 @@ These v1 workflows map to backend functions in v2 — invoke only on demand, nev
 | File | Type | Status |
 |------|------|--------|
 | `workflows/idea_gate.md` | core | active |
+| `workflows/telegram_gateway.md` | interface | active (approval-first queue; no scheduler) |
 | `workflows/product_idea_debate.md` | core (v2 draft pending) | active |
 | `workflows/evidence_crosscheck.md` | core | active (Nova-V) |
 | `workflows/product_idea_to_prd.md` | core | active |
@@ -147,5 +173,7 @@ Input received by Minori
   with each expected gate marked Pre-Decide or Defer before Aki starts.
 - Level 1 Runtime: `runtime_tracking` + `logs/runtime_status.md` are status-only; no scheduler,
   parallel fanout, or extra agent spawn is allowed for runtime logging.
+- Telegram Gateway v1: approval-first queue only; no LLM from `/status`, `/approve`, `/reject`, or
+  `/budget`; no long-chat memory.
 - Agent Registry Lock: Nova-V replaces Nova+Vera; Gina/Kai/Lexi/Graphy/Seco are backend only.
 - Dynamic Workflow policy: `llm_wiki/token_optimization_rules.md`.

@@ -41,7 +41,9 @@ Never skip Minori to go directly to a specialist agent.
 | `workflow_plan.md` | Every run |
 | `handoff.md` | Before each agent delegation |
 | `approval_request.md` | When a gate is triggered (incl. any `dynamic` execution_mode) |
-| `logs/runtime_status.md` row | Any `/idea-gate` route beyond pure classification |
+| `logs/runtime_status.md` row | Any `/idea-gate` route beyond pure classification (via `safe_log_write.sh`) |
+| `logs/agent_runs/<run_id>.md` | One per routed step — pipeline and consult (via `safe_log_write.sh`) |
+| `handoffs/adhoc_<agent-key>_<timestamp>.md` | When `job: consult` (the named agent's output) |
 
 ---
 
@@ -73,6 +75,51 @@ Level 1 Runtime is not a scheduler. `task_queue` is only the `next_step` marker,
 workflow, enable parallel/fanout, or paste full artifact/chat/source/vault content into the runtime
 status log.
 
+**Append + verify (Layer 1 — the real fix for row loss):** `logs/runtime_status.md` is a single
+shared table; an ad-hoc full-file rewrite or two concurrent writers can silently drop a row. Minori
+writes it (and every `logs/agent_runs/` entry) only through `scripts/safe_log_write.sh` — a locked
+(`mkdir`-mutex, no `flock` dependency), append-only, read-back-verified helper that fails loud rather
+than clobbering. After each routed step returns, Minori writes one `logs/agent_runs/<run_id>.md`
+entry inline via the helper (never a separate logger agent).
+
+**Usage guidance (Layer 2 — prevention):** sequential-by-default = one writer at a time; one
+`run_id` per run and one file per step; edit only your own run's row by `run_id`; paths never bodies;
+distinct `adhoc_<agent-key>_<timestamp>` naming so consults never collide with pipeline names.
+
+## Telegram Gateway v1
+
+Telegram is an interface layer, not a new agent. It writes compact queue items under
+`runtime/queue/` and maps `/idea <text>` or `/ask <agent> <question>` into `/idea-gate` payloads.
+
+- `/status`, `/approve`, `/reject`, and `/budget` only read or update queue state; they never invoke
+  an LLM.
+- `scripts/telegram_worker_run_once.sh` dispatches at most one approved queue item into a handoff
+  artifact for the Claude/Codex session.
+- Budget defaults: consult = `tiny`; `/idea` = `small`; `medium` requires explicit budget update and
+  approval. `large`/`dynamic` return to the normal Rika-Chan gate.
+- Telegram chat is not memory. Store compact payloads and artifact paths only, never full chat
+  history.
+
+---
+
+## Consult Fast-Path (ad-hoc single-agent)
+
+`job: consult` is the Minori-gated fast lane for "ask one named agent one narrow question". Routing
+Law intact — Minori classifies first — but the heavy machinery is skipped because it doesn't apply:
+
+- No full 8-field `workflow_plan.md`, no `agent_sequence`, no Gate Scope Pre-Clarification (a consult
+  never reaches Aki).
+- Minori writes **one** `logs/runtime_status.md` row tagged `runtime_mode: adhoc_consult` (via the
+  append+verify helper), routes `single_agent` to the named agent, and the agent returns one
+  artifact named `handoffs/adhoc_<agent-key>_<YYYYMMDD_HHMMSS>.md` (never a canonical pipeline name).
+- The orchestrator still writes one `logs/agent_runs/` entry — the fast path is fully audited.
+
+**Escalation guard (stop-and-redirect):** if Minori or the named agent recognizes the ask is
+build-bearing, strategic, or gate-triggering in disguise — e.g. "ขอ Aki ลุยสร้างเลย", or "Sora ควร
+kill โปรเจกต์นี้ไหม" used to *make* a kill/pivot decision — Minori stops and redirects to the full
+`/idea-gate` pipeline. A consult never substitutes for a Rika-Chan hard gate (strategic pivot,
+kill-signal, legal/privacy, security, payment/deploy).
+
 ---
 
 ## Input Classification
@@ -82,7 +129,9 @@ status log.
 Classify to exactly one of:
 `idea_gate · product_idea_debate · evidence_crosscheck · product_idea_to_prd · prd_to_codex_tasks · codex_build_loop · qa_review · governance_check · memory_intake · llm_wiki_update · kaizen_review`
 
-These map to the user-facing jobs: `recall · next · scout · memory · research · idea-debate · build · governance`.
+These map to the user-facing jobs: `recall · next · scout · memory · research · idea-debate · build · governance · consult`.
+`consult` is the lightweight single-agent fast-path (see **Consult Fast-Path** below); it has no full
+pipeline workflow ID.
 
 Low-risk + incomplete → proceed with labeled assumptions.
 High-risk + incomplete → ask ≤3 clarification questions or request approval.
@@ -143,7 +192,7 @@ vault. This is the compounding-memory entry point.
 
 - Read context packs, handoff files, agent cards, workflow files, `knowledge/instincts/`
 - Write `workflow_plan.md`, `handoff.md`, `approval_request.md`, and compact
-  `logs/runtime_status.md` rows
+  `logs/runtime_status.md` rows + `logs/agent_runs/` entries (via `scripts/safe_log_write.sh`)
 - Route to specialist agents (one at a time, sequentially)
 
 ## Forbidden Actions
